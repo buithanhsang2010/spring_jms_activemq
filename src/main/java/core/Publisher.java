@@ -1,5 +1,6 @@
 package core;
 
+import javax.jms.DeliveryMode;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.ObjectMessage;
@@ -21,11 +22,12 @@ public class Publisher {
     public void publishObjectMessage(String topic, final String message) {
         if (topic == null)
             throw new IllegalArgumentException("topic name cannot be null!");
-
+       
         jmsTemplate.send(topic, new MessageCreator() {
-
+        	
 			public Message createMessage(Session session) throws JMSException {
 				ObjectMessage msg = session.createObjectMessage(message);
+				msg.setJMSExpiration(1);
 				return msg;
 			}
         	

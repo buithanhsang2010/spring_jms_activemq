@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:jms="http://www.springframework.org/schema/jms"
+    xmlns:p="http://www.springframework.org/schema/p" xmlns:context="http://www.springframework.org/schema/context"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+                        http://www.springframework.org/schema/jms http://www.springframework.org/schema/jms/spring-jms.xsd
+                        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <bean id="jmsConnectionFactory" class="org.apache.activemq.ActiveMQConnectionFactory">
+        <property name="brokerURL"
+            value="tcp://localhost:61616" />
+        <property name="userName" value="admin" />
+        <property name="password" value="password" />
+    </bean>
+
+    <bean id="pooledConnectionFactory" class="org.apache.activemq.pool.PooledConnectionFactory"
+        destroy-method="stop">
+        <property name="connectionFactory" ref="jmsConnectionFactory" />
+    </bean>
+        
+    <bean id="jmsTemplate" class="org.springframework.jms.core.JmsTemplate"
+        p:connectionFactory-ref="pooledConnectionFactory"
+        p:pubSubDomain="true"/>
+
+    <bean id="jmsTemplateQueue" class="org.springframework.jms.core.JmsTemplate"
+        p:connectionFactory-ref="pooledConnectionFactory" />
+        
+    <context:component-scan base-package="core" />
+    
+    <bean id="singleConnectionFactory"
+        class="org.springframework.jms.connection.SingleConnectionFactory"
+        p:targetConnectionFactory-ref="jmsConnectionFactory"
+        p:clientId="2343er243234" />
+    
+    <!-- destination-type="topic" -->
+      <jms:listener-container concurrency="1"
+        connection-factory="singleConnectionFactory"
+        acknowledge="auto">
+        <jms:listener
+            destination="HelloQueue"
+            ref="subscriber" method="consumeMessage"
+            subscription="Hello Queue Subscription" />
+    
+    </jms:listener-container>
+     
+</beans>	
